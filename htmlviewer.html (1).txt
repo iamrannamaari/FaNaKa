@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hourly Reading Sheet</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #1abc9c;
+            --light-bg: #f8f9fa;
+            --border-color: #e0e0e0;
+            --text-color: #333;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 10px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .container {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+        
+        .subtitle {
+            font-size: 1rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+        
+        .shift-selector {
+            display: flex;
+            justify-content: center;
+            background-color: var(--light-bg);
+            padding: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .shift-option {
+            padding: 10px 20px;
+            margin: 0 5px;
+            border-radius: 8px;
+            background-color: white;
+            border: 2px solid var(--border-color);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            flex: 1;
+            max-width: 200px;
+            text-align: center;
+        }
+        
+        .shift-option.active {
+            background-color: var(--secondary-color);
+            color: white;
+            border-color: var(--secondary-color);
+        }
+        
+        .shift-option:hover:not(.active) {
+            border-color: var(--secondary-color);
+        }
+        
+        .shift-times {
+            text-align: center;
+            padding: 10px;
+            background-color: var(--light-bg);
+            font-weight: 500;
+            color: var(--primary-color);
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            padding: 15px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+        
+        th {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 15px 10px;
+            text-align: center;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        td {
+            padding: 12px 10px;
+            border-bottom: 1px solid var(--border-color);
+            text-align: center;
+        }
+        
+        tr:nth-child(even) {
+            background-color: var(--light-bg);
+        }
+        
+        tr:hover {
+            background-color: rgba(52, 152, 219, 0.05);
+        }
+        
+        input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            text-align: center;
+            font-size: 0.95rem;
+            transition: border 0.3s;
+        }
+        
+        input[type="number"]:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
+        
+        .calc-cell {
+            background-color: rgba(26, 188, 156, 0.1);
+            font-weight: 500;
+            color: var(--primary-color);
+        }
+        
+        .hour-cell {
+            background-color: rgba(44, 62, 80, 0.05);
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        
+        .footer {
+            padding: 20px;
+            text-align: center;
+            border-top: 1px solid var(--border-color);
+            background-color: var(--light-bg);
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn-save {
+            background-color: #9b59b6;
+            color: white;
+        }
+        
+        .btn-save:hover {
+            background-color: #8e44ad;
+        }
+        
+        .btn-load {
+            background-color: #f39c12;
+            color: white;
+        }
+        
+        .btn-load:hover {
+            background-color: #d68910;
+        }
+        
+        .btn-outline {
+            background-color: white;
+            color: var(--primary-color);
+            border: 1px solid var(--border-color);
+        }
+        
+        .btn-outline:hover {
+            background-color: var(--light-bg);
+        }
+        
+        .summary {
+            text-align: left;
+            flex: 1;
+            margin-bottom: 15px;
+        }
+        
+        .summary h3 {
+            margin-bottom: 8px;
+            color: var(--primary-color);
+        }
+        
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px dashed var(--border-color);
+        }
+        
+        .summary-label {
+            font-weight: 500;
+        }
+        
+        .summary-value {
+            font-weight: 600;
+        }
+        
+        @media (max-width: 768px) {
+            .shift-option {
+                padding: 8px 12px;
+                font-size: 0.9rem;
+            }
+            
+            .footer {
+                flex-direction: column;
+            }
+            
+            .actions {
+                width: 100%;
+                justify-content: center;
+                margin-bottom: 15px;
+            }
+            
+            button {
+                flex: 1;
+                min-width: 120px;
+            }
+            
+            .summary {
+                width: 100%;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.5rem;
+            }
+            
+            .subtitle {
+                font-size: 0.9rem;
+            }
+            
+            th, td {
+                padding: 10px 6px;
+                font-size: 0.85rem;
+            }
+            
+            .shift-option {
+                padding: 6px 8px;
+                font-size: 0.8rem;
+            }
+        }
+        
+        .note {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 5px;
+            text-align: center;
+        }
+        
+        .save-status {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 10px 15px;
+            border-radius: 8px;
+            background-color: var(--accent-color);
+            color: white;
+            font-weight: 500;
+            box-shadow: var(--shadow);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .save-status.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-clipboard-list"></i> Hourly Reading Sheet</h1>
+            <p class="subtitle">Monitor electricity usage, water production, and distribution</p>
+        </header>
+        
+        <div class="shift-selector">
+            <div class="shift-option active" data-shift="morning">Morning Shift (08:00 - 16:00)</div>
+            <div class="shift-option" data-shift="afternoon">Afternoon Shift (16:00 - 00:00)</div>
+            <div class="shift-option" data-shift="midnight">Midnight Shift (00:00 - 08:00)</div>
+        </div>
+        
+        <div class="shift-times">
+            Current Shift Hours: <span id="current-shift-hours">08:00 - 16:00</span>
+        </div>
+        
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Hour</th>
+                        <th>Electricity Usage (kWh)</th>
+                        <th>Solar Production (kWh)</th>
+                        <th>Total RO Water Production (m³)</th>
+                        <th>Hourly RO Production (m³)</th>
+                        <th>Total Water Distribution (m³)</th>
+                        <th>Hourly Water Distribution (m³)</th>
+                        <th>Water Tank Level (m)</th>
+                    </tr>
+                </thead>
+                <tbody id="readings-table">
+                    <!-- Rows will be generated by JavaScript -->
+                </tbody>
+            </table>
+            <p class="note">All hourly values are calculated automatically. Data is saved automatically.</p>
+        </div>
+        
+        <div class="footer">
+            <div class="actions">
+                <button class="btn-save" id="save-btn">
+                    <i class="fas fa-save"></i> Save Data
+                </button>
+                <button class="btn-load" id="load-btn">
+                    <i class="fas fa-folder-open"></i> Load Data
+                </button>
+                <button class="btn-outline" id="clear-btn">
+                    <i class="fas fa-eraser"></i> Clear Shift
+                </button>
+            </div>
+            
+            <div class="summary">
+                <h3><i class="fas fa-chart-bar"></i> Shift Summary</h3>
+                <div class="summary-item">
+                    <span class="summary-label">Total Electricity Usage:</span>
+                    <span class="summary-value" id="total-electricity">0.000 kWh</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Total Solar Production:</span>
+                    <span class="summary-value" id="total-solar">0.000 kWh</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Total RO Production:</span>
+                    <span class="summary-value" id="total-ro">0.000 m³</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Total Water Distributed:</span>
+                    <span class="summary-value" id="total-water-dist">0.000 m³</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="save-status" id="save-status">Data Saved!</div>
+
+    <script>
+        // Initial data structure
+        let currentShift = 'morning';
+        let shiftHours = {
+            'morning': ['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00'],
+            'afternoon': ['16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00', '23:00'],
+            'midnight': ['00:00', '01:00', '02:00', '03:00', '04:00', '05:00', '06:00', '07:00']
+        };
+        
+        let shiftTimes = {
+            'morning': '08:00 to 16:00',
+            'afternoon': '16:00 to 00:00',
+            'midnight': '00:00 to 08:00'
+        };
+        
+        // Initialize readings data
+        let readings = {};
+        
+        // Load data from localStorage on app start
+        function loadFromLocalStorage() {
+            const savedData = localStorage.getItem('hourlyReadingsData');
+            if (savedData) {
+                try {
+                    readings = JSON.parse(savedData);
+                    // Check if data structure is valid
+                    if (!readings.morning || !readings.afternoon || !readings.midnight) {
+                        initializeReadings();
+                    }
+                } catch (e) {
+                    console.error('Error loading saved data:', e);
+                    initializeReadings();
+                }
+            } else {
+                initializeReadings();
+            }
+        }
+        
+        // Save data to localStorage
+        function saveToLocalStorage() {
+            try {
+                localStorage.setItem('hourlyReadingsData', JSON.stringify(readings));
+                showSaveStatus('Data saved successfully!');
+            } catch (e) {
+                console.error('Error saving data:', e);
+                showSaveStatus('Error saving data!', 'error');
+            }
+        }
+        
+        // Show save status notification
+        function showSaveStatus(message, type = 'success') {
+            const status = document.getElementById('save-status');
+            status.textContent = message;
+            status.style.backgroundColor = type === 'success' ? '#1abc9c' : '#e74c3c';
+            
+            status.classList.add('show');
+            setTimeout(() => {
+                status.classList.remove('show');
+            }, 2000);
+        }
+        
+        // Initialize with empty data for each shift
+        function initializeReadings() {
+            for (const shift in shiftHours) {
+                readings[shift] = [];
+                for (let i = 0; i < 8; i++) {
+                    readings[shift].push({
+                        hour: shiftHours[shift][i],
+                        electricity: '',
+                        solar: '',
+                        totalRO: '',
+                        totalWaterDist: '',
+                        tankLevel: ''
+                    });
+                }
+            }
+        }
+        
+        // Initialize the app
+        function initApp() {
+            loadFromLocalStorage();
+            setupShiftSelector();
+            renderTable();
+            updateSummary();
+        }
+        
+        // Set up shift selector
+        function setupShiftSelector() {
+            const shiftOptions = document.querySelectorAll('.shift-option');
+            shiftOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    // Remove active class from all options
+                    shiftOptions.forEach(opt => opt.classList.remove('active'));
+                    
+                    // Add active class to clicked option
+                    this.classList.add('active');
+                    
+                    // Update current shift
+                    currentShift = this.getAttribute('data-shift');
+                    
+                    // Update shift hours display
+                    document.getElementById('current-shift-hours').textContent = shiftTimes[currentShift];
+                    
+                    // Re-render table for the selected shift
+                    renderTable();
+                    updateSummary();
+                });
+            });
+        }
+        
+        // Render the table based on current shift
+        function renderTable() {
+            const tableBody = document.getElementById('readings-table');
+            tableBody.innerHTML = '';
+            
+            const shiftData = readings[currentShift];
+            
+            for (let i = 0; i < shiftData.length; i++) {
+                const rowData = shiftData[i];
+                const prevRowData = i > 0 ? shiftData[i-1] : null;
+                
+                const row = document.createElement('tr');
+                
+                // Hour cell
+                const hourCell = document.createElement('td');
+                hourCell.className = 'hour-cell';
+                hourCell.textContent = rowData.hour;
+                row.appendChild(hourCell);
+                
+                // Electricity Usage
+                const electricityCell = document.createElement('td');
+                electricityCell.innerHTML = `<input type="number" min="0" step="0.001" 
+                    data-row="${i}" data-type="electricity" 
+                    value="${rowData.electricity}" placeholder="0.000">`;
+                row.appendChild(electricityCell);
+                
+                // Solar Production
+                const solarCell = document.createElement('td');
+                solarCell.innerHTML = `<input type="number" min="0" step="0.001" 
+                    data-row="${i}" data-type="solar" 
+                    value="${rowData.solar}" placeholder="0.000">`;
+                row.appendChild(solarCell);
+                
+                // Total RO Production
+                const totalROCell = document.createElement('td');
+                totalROCell.innerHTML = `<input type="number" min="0" step="0.001" 
+                    data-row="${i}" data-type="totalRO" 
+                    value="${rowData.totalRO}" placeholder="0.000">`;
+                row.appendChild(totalROCell);
+                
+                // Hourly RO Production (calculated)
+                const hourlyROCell = document.createElement('td');
+                hourlyROCell.className = 'calc-cell';
+                hourlyROCell.id = `hourly-ro-${i}`;
+                hourlyROCell.textContent = calculateHourlyRO(i, rowData, prevRowData);
+                row.appendChild(hourlyROCell);
+                
+                // Total Water Distribution
+                const totalWaterDistCell = document.createElement('td');
+                totalWaterDistCell.innerHTML = `<input type="number" min="0" step="0.001" 
+                    data-row="${i}" data-type="totalWaterDist" 
+                    value="${rowData.totalWaterDist}" placeholder="0.000">`;
+                row.appendChild(totalWaterDistCell);
+                
+                // Hourly Water Distribution (calculated)
+                const hourlyWaterDistCell = document.createElement('td');
+                hourlyWaterDistCell.className = 'calc-cell';
+                hourlyWaterDistCell.id = `hourly-water-dist-${i}`;
+                hourlyWaterDistCell.textContent = calculateHourlyWaterDist(i, rowData, prevRowData);
+                row.appendChild(hourlyWaterDistCell);
+                
+                // Water Tank Level
+                const tankLevelCell = document.createElement('td');
+                tankLevelCell.innerHTML = `<input type="number" min="0" max="10" step="0.001" 
+                    data-row="${i}" data-type="tankLevel" 
+                    value="${rowData.tankLevel}" placeholder="0.000">`;
+                row.appendChild(tankLevelCell);
+                
+                tableBody.appendChild(row);
+            }
+            
+            // Add event listeners to inputs
+            addInputEventListeners();
+        }
+        
+        // Calculate hourly RO production
+        function calculateHourlyRO(rowIndex, currentRow, previousRow) {
+            if (rowIndex === 0) {
+                return currentRow.totalRO ? parseFloat(currentRow.totalRO).toFixed(3) : '0.000';
+            }
+            
+            if (currentRow.totalRO && previousRow.totalRO) {
+                const diff = parseFloat(currentRow.totalRO) - parseFloat(previousRow.totalRO);
+                return diff >= 0 ? diff.toFixed(3) : '0.000';
+            }
+            
+            return '0.000';
+        }
+        
+        // Calculate hourly water distribution
+        function calculateHourlyWaterDist(rowIndex, currentRow, previousRow) {
+            if (rowIndex === 0) {
+                return currentRow.totalWaterDist ? parseFloat(currentRow.totalWaterDist).toFixed(3) : '0.000';
+            }
+            
+            if (currentRow.totalWaterDist && previousRow.totalWaterDist) {
+                const diff = parseFloat(currentRow.totalWaterDist) - parseFloat(previousRow.totalWaterDist);
+                return diff >= 0 ? diff.toFixed(3) : '0.000';
+            }
+            
+            return '0.000';
+        }
+        
+        // Add event listeners to input fields
+        function addInputEventListeners() {
+            const inputs = document.querySelectorAll('input[type="number"]');
+            
+            inputs.forEach(input => {
+                // Remove existing event listeners by cloning the element
+                const newInput = input.cloneNode(true);
+                input.parentNode.replaceChild(newInput, input);
+                
+                newInput.addEventListener('input', function() {
+                    const rowIndex = parseInt(this.getAttribute('data-row'));
+                    const type = this.getAttribute('data-type');
+                    let value = this.value;
+                    
+                    // Update data model
+                    readings[currentShift][rowIndex][type] = value;
+                    
+                    // Auto-save when data changes
+                    saveToLocalStorage();
+                    
+                    // Calculate and update hourly values
+                    updateCalculatedValues(rowIndex);
+                    
+                    // Update summary
+                    updateSummary();
+                });
+                
+                newInput.addEventListener('change', function() {
+                    // Limit to 3 decimal places
+                    if (this.value && this.value.includes('.')) {
+                        const parts = this.value.split('.');
+                        if (parts[1].length > 3) {
+                            this.value = parseFloat(this.value).toFixed(3);
+                        }
+                    }
+                    
+                    // Update data model
+                    const rowIndex = parseInt(this.getAttribute('data-row'));
+                    const type = this.getAttribute('data-type');
+                    readings[currentShift][rowIndex][type] = this.value;
+                    
+                    // Auto-save when data changes
+                    saveToLocalStorage();
+                    
+                    // Update calculations
+                    updateCalculatedValues(rowIndex);
+                    updateSummary();
+                });
+            });
+        }
+        
+        // Update calculated values for a row
+        function updateCalculatedValues(rowIndex) {
+            const currentRow = readings[currentShift][rowIndex];
+            const prevRow = rowIndex > 0 ? readings[currentShift][rowIndex-1] : null;
+            
+            // Update hourly RO production
+            const hourlyROElement = document.getElementById(`hourly-ro-${rowIndex}`);
+            hourlyROElement.textContent = calculateHourlyRO(rowIndex, currentRow, prevRow);
+            
+            // Update hourly water distribution
+            const hourlyWaterDistElement = document.getElementById(`hourly-water-dist-${rowIndex}`);
+            hourlyWaterDistElement.textContent = calculateHourlyWaterDist(rowIndex, currentRow, prevRow);
+            
+            // If there's a next row, update its calculations too
+            if (rowIndex < 7) {
+                updateCalculatedValues(rowIndex + 1);
+            }
+        }
+        
+        // Update the summary section - FIXED VERSION (all totals are sum of hourly differences)
+        function updateSummary() {
+            const shiftData = readings[currentShift];
+            
+            let totalElectricity = 0;
+            let totalSolar = 0;
+            let totalRO = 0;
+            let totalWaterDist = 0;
+            
+            shiftData.forEach((row, index) => {
+                // For electricity usage: skip first row (it's the starting value)
+                // Calculate sum of hourly differences starting from row 1
+                if (index > 0) {
+                    const prevRow = shiftData[index-1];
+                    if (row.electricity && prevRow.electricity) {
+                        const hourlyElectricity = parseFloat(row.electricity) - parseFloat(prevRow.electricity);
+                        if (hourlyElectricity > 0) totalElectricity += hourlyElectricity;
+                    }
+                }
+                
+                // For solar production: skip first row (it's the starting value)
+                // Calculate sum of hourly differences starting from row 1
+                if (index > 0) {
+                    const prevRow = shiftData[index-1];
+                    if (row.solar && prevRow.solar) {
+                        const hourlySolar = parseFloat(row.solar) - parseFloat(prevRow.solar);
+                        if (hourlySolar > 0) totalSolar += hourlySolar;
+                    }
+                }
+                
+                // For RO production: skip first row (it's the starting value)
+                // Calculate sum of hourly differences starting from row 1
+                if (index > 0) {
+                    const prevRow = shiftData[index-1];
+                    if (row.totalRO && prevRow.totalRO) {
+                        const hourlyRO = parseFloat(row.totalRO) - parseFloat(prevRow.totalRO);
+                        if (hourlyRO > 0) totalRO += hourlyRO;
+                    }
+                }
+                
+                // For water distribution: skip first row (it's the starting value)
+                // Calculate sum of hourly differences starting from row 1
+                if (index > 0) {
+                    const prevRow = shiftData[index-1];
+                    if (row.totalWaterDist && prevRow.totalWaterDist) {
+                        const hourlyWaterDist = parseFloat(row.totalWaterDist) - parseFloat(prevRow.totalWaterDist);
+                        if (hourlyWaterDist > 0) totalWaterDist += hourlyWaterDist;
+                    }
+                }
+            });
+            
+            document.getElementById('total-electricity').textContent = totalElectricity.toFixed(3) + ' kWh';
+            document.getElementById('total-solar').textContent = totalSolar.toFixed(3) + ' kWh';
+            document.getElementById('total-ro').textContent = totalRO.toFixed(3) + ' m³';
+            document.getElementById('total-water-dist').textContent = totalWaterDist.toFixed(3) + ' m³';
+        }
+        
+        // Set up button event listeners
+        function setupButtons() {
+            // Save Data button
+            document.getElementById('save-btn').addEventListener('click', function() {
+                saveToLocalStorage();
+            });
+            
+            // Load Data button
+            document.getElementById('load-btn').addEventListener('click', function() {
+                loadFromLocalStorage();
+                renderTable();
+                updateSummary();
+                showSaveStatus('Data loaded successfully!');
+            });
+            
+            // Clear Shift button
+            document.getElementById('clear-btn').addEventListener('click', function() {
+                if (confirm('Are you sure you want to clear all readings for this shift?')) {
+                    readings[currentShift] = readings[currentShift].map(row => ({
+                        hour: row.hour,
+                        electricity: '',
+                        solar: '',
+                        totalRO: '',
+                        totalWaterDist: '',
+                        tankLevel: ''
+                    }));
+                    renderTable();
+                    updateSummary();
+                    saveToLocalStorage();
+                    showSaveStatus('Shift data cleared!');
+                }
+            });
+        }
+        
+        // Initialize the app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            initApp();
+            setupButtons();
+            
+            // Auto-save every 30 seconds as backup
+            setInterval(saveToLocalStorage, 30000);
+            
+            // Show welcome message if first time
+            const savedData = localStorage.getItem('hourlyReadingsData');
+            if (!savedData) {
+                setTimeout(() => {
+                    showSaveStatus('Welcome! Data will be auto-saved.', 'success');
+                }, 1000);
+            }
+        });
+    </script>
+</body>
+</html>
